@@ -10,9 +10,17 @@ class PausePage extends StatefulWidget {
 
 class _PausePageState extends State<PausePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   final Map<String, Map<String, TextEditingController>> _controllers = {};
-  final List<String> _pollinators = ['Ants', 'Beetles', 'Butterflies', 'Flies', 'Honeybees', 'Moths', 'Wasps'];
+  final List<String> _pollinators = [
+    'Ants',
+    'Beetles',
+    'Butterflies',
+    'Flies',
+    'Honeybees',
+    'Moths',
+    'Wasps'
+  ];
   final List<String> _locations = ['West Valley Gardens', 'West Valley Campus'];
 
   @override
@@ -48,7 +56,8 @@ class _PausePageState extends State<PausePage> {
           final count = int.tryParse(countText);
           if (count != null && count > 0) {
             submissions++;
-            final docRef = _firestore.collection('pollinator_observations').doc();
+            final docRef =
+                _firestore.collection('pollinator_observations').doc();
             batch.set(docRef, {
               'pollinator': pollinator,
               'location': location,
@@ -64,9 +73,10 @@ class _PausePageState extends State<PausePage> {
       try {
         await batch.commit();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thank you for submitting your observations!')),
+          const SnackBar(
+              content: Text('Thank you for submitting your observations!')),
         );
-        Navigator.of(context).pop(); 
+        Navigator.of(context).pop();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error submitting data: $e')),
@@ -84,7 +94,7 @@ class _PausePageState extends State<PausePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("West Valley's Pause for Pollinators"),
-        backgroundColor: Colors.green, 
+        backgroundColor: Colors.green,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -99,17 +109,17 @@ class _PausePageState extends State<PausePage> {
                 textAlign: TextAlign.justify,
               ),
             ),
-
-            _buildInstructionStep('1', 'Pause your work and spend 15 mindful minutes outdoors to refresh your focus and lift your mood.'),
-            _buildInstructionStep('2', 'Download iNaturalist and join the WVG project to help ID organisms and photograph biodiversity.'),
-            _buildInstructionStep('3', 'Spend 10 minutes fully present with pollinators: observe, listen, and log your counts.'),
+            _buildInstructionStep('1',
+                'Pause your work and spend 15 mindful minutes outdoors to refresh your focus and lift your mood.'),
+            _buildInstructionStep('2',
+                'Download iNaturalist and join the WVG project to help ID organisms and photograph biodiversity.'),
+            _buildInstructionStep('3',
+                'Spend 10 minutes fully present with pollinators: observe, listen, and log your counts.'),
             const SizedBox(height: 24),
-
             _buildHeaderRow(),
             const Divider(thickness: 2),
-
-            ..._pollinators.map((pollinator) => _buildPollinatorRow(pollinator)),
-
+            ..._pollinators
+                .map((pollinator) => _buildPollinatorRow(pollinator)),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _submitData,
@@ -117,7 +127,8 @@ class _PausePageState extends State<PausePage> {
                 backgroundColor: Colors.green[100],
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textStyle:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               child: const Text('Submit Observations'),
             ),
@@ -133,7 +144,12 @@ class _PausePageState extends State<PausePage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(radius: 12, backgroundColor: Colors.green, child: Text(number, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))), 
+          CircleAvatar(
+              radius: 12,
+              backgroundColor: Colors.green,
+              child: Text(number,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold))),
           const SizedBox(width: 12),
           Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
         ],
@@ -144,9 +160,22 @@ class _PausePageState extends State<PausePage> {
   Widget _buildHeaderRow() {
     return Row(
       children: [
-        const Expanded(flex: 2, child: Text('Pollinator', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-        Expanded(flex: 3, child: Text(_locations[0], textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-        Expanded(flex: 3, child: Text(_locations[1], textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+        const Expanded(
+            flex: 2,
+            child: Text('Pollinator',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+        Expanded(
+            flex: 3,
+            child: Text(_locations[0],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16))),
+        Expanded(
+            flex: 3,
+            child: Text(_locations[1],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16))),
       ],
     );
   }
@@ -156,7 +185,9 @@ class _PausePageState extends State<PausePage> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Expanded(flex: 2, child: Text(pollinator, style: const TextStyle(fontSize: 16))),
+          Expanded(
+              flex: 2,
+              child: Text(pollinator, style: const TextStyle(fontSize: 16))),
           Expanded(flex: 3, child: _buildCountBox(pollinator, _locations[0])),
           Expanded(flex: 3, child: _buildCountBox(pollinator, _locations[1])),
         ],

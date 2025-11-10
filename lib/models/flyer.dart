@@ -1,4 +1,3 @@
-
 class Flyer {
   final String name;
   final String path; // Changed from Uint8List to String

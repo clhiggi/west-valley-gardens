@@ -44,16 +44,19 @@ class ViewDataPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildDataChart(context, 'West Valley Gardens', westValleyGardensData),
+            _buildDataChart(
+                context, 'West Valley Gardens', westValleyGardensData),
             const SizedBox(height: 40),
-            _buildDataChart(context, 'West Valley Campus', westValleyCampusData),
+            _buildDataChart(
+                context, 'West Valley Campus', westValleyCampusData),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDataChart(BuildContext context, String title, Map<String, double> data) {
+  Widget _buildDataChart(
+      BuildContext context, String title, Map<String, double> data) {
     if (data.isEmpty) {
       return Card(
         color: asuGold.withOpacity(0.1),
@@ -159,5 +162,3 @@ class ViewDataPage extends StatelessWidget {
     );
   }
 }
-
-

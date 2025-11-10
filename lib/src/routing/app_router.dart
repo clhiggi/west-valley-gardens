@@ -19,7 +19,8 @@ class AppRouter {
                 currentIndex: navigationShell.currentIndex,
                 onTap: (index) => navigationShell.goBranch(index),
                 items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.home), label: 'Home'),
                   BottomNavigationBarItem(
                       icon: Icon(Icons.event), label: 'Events'),
                   BottomNavigationBarItem(

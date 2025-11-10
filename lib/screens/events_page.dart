@@ -14,7 +14,6 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   Map<DateTime, List<Event>> _events = {};
@@ -35,14 +34,19 @@ class _EventsPageState extends State<EventsPage> {
       setState(() {
         _events = {};
         for (var doc in snapshot.docs) {
-          Event event = Event.fromFirestore(doc);
-          DateTime date = DateTime.utc(
-            event.startTime.year,
-            event.startTime.month,
-            event.startTime.day,
-          );
-          _events.putIfAbsent(date, () => []);
-          _events[date]!.add(event);
+          try {
+            Event event = Event.fromFirestore(doc);
+            DateTime date = DateTime.utc(
+              event.startTime.year,
+              event.startTime.month,
+              event.startTime.day,
+            );
+            _events.putIfAbsent(date, () => []);
+            _events[date]!.add(event);
+          } catch (e) {
+            // ignore malformed doc or log
+            debugPrint('Error parsing event doc ${doc.id}: $e');
+          }
         }
         if (_selectedDay != null) {
           _selectedEvents = _getEventsForDay(_selectedDay!);
@@ -77,25 +81,22 @@ class _EventsPageState extends State<EventsPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            TableCalendar(
+            TableCalendar<Event>(
               firstDay: DateTime.utc(2020, 1, 1),
               lastDay: DateTime.utc(2035, 12, 31),
               focusedDay: _focusedDay,
-              calendarFormat: _calendarFormat,
+              calendarFormat: CalendarFormat.month,
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               onDaySelected: _onDaySelected,
               eventLoader: _getEventsForDay,
-              onFormatChanged: (format) {
-                if (_calendarFormat != format) {
-                  setState(() => _calendarFormat = format);
-                }
-              },
               onPageChanged: (focusedDay) {
-                _focusedDay = focusedDay;
+                setState(() {
+                  _focusedDay = focusedDay;
+                });
               },
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
-                  color: Colors.green[800], 
+                  color: Colors.green[800],
                   shape: BoxShape.circle,
                 ),
                 selectedDecoration: const BoxDecoration(
@@ -104,7 +105,10 @@ class _EventsPageState extends State<EventsPage> {
                 ),
               ),
               headerStyle: const HeaderStyle(
-                formatButtonTextStyle: TextStyle(color: Colors.white, fontSize: 14.0),
+                formatButtonVisible: false, // hide format button
+                titleCentered: true,
+                formatButtonTextStyle:
+                    TextStyle(color: Colors.white, fontSize: 14.0),
                 formatButtonDecoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.all(Radius.circular(12.0)),
@@ -180,7 +184,7 @@ class _EventsPageState extends State<EventsPage> {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.green : Colors.green[100],
+              color: isSelected ? Colors.green : Colors.green.shade100,
               borderRadius: BorderRadius.circular(12.0),
             ),
             child: Padding(
@@ -206,7 +210,10 @@ class _EventsPageState extends State<EventsPage> {
                         if (event.description.isNotEmpty)
                           Text(
                             event.description,
-                            style: TextStyle(color: isSelected ? Colors.white70 : Colors.black54),
+                            style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white70
+                                    : Colors.black54),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -214,24 +221,41 @@ class _EventsPageState extends State<EventsPage> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Icon(Icons.access_time, color: isSelected ? Colors.white70 : Colors.black54, size: 16),
+                            Icon(Icons.access_time,
+                                color: isSelected
+                                    ? Colors.white70
+                                    : Colors.black54,
+                                size: 16),
                             const SizedBox(width: 4),
                             Text(
                               '${DateFormat.jm().format(event.startTime)} - ${DateFormat.jm().format(event.endTime)}',
-                              style: TextStyle(color: isSelected ? Colors.white70 : Colors.black54, fontSize: 12),
+                              style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white70
+                                      : Colors.black54,
+                                  fontSize: 12),
                             ),
                             const SizedBox(width: 16),
-                            if (event.location != null && event.location!.isNotEmpty)
+                            if (event.location != null &&
+                                event.location!.isNotEmpty)
                               Flexible(
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.location_on, color: isSelected ? Colors.white70 : Colors.black54, size: 16),
+                                    Icon(Icons.location_on,
+                                        color: isSelected
+                                            ? Colors.white70
+                                            : Colors.black54,
+                                        size: 16),
                                     const SizedBox(width: 4),
                                     Flexible(
                                       child: Text(
                                         event.location!,
-                                        style: TextStyle(color: isSelected ? Colors.white70 : Colors.black54, fontSize: 12),
+                                        style: TextStyle(
+                                            color: isSelected
+                                                ? Colors.white70
+                                                : Colors.black54,
+                                            fontSize: 12),
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
                                       ),
@@ -251,11 +275,13 @@ class _EventsPageState extends State<EventsPage> {
                       Tooltip(
                         message: 'Edit',
                         child: SizedBox(
-                          width: 24,
-                          height: 24,
+                          width: 32,
+                          height: 32,
                           child: IconButton(
                             padding: EdgeInsets.zero,
-                            icon: Icon(Icons.edit, color: isSelected ? Colors.white : Colors.green, size: 24),
+                            icon: Icon(Icons.edit,
+                                color: isSelected ? Colors.white : Colors.green,
+                                size: 20),
                             onPressed: () => _showEditEventDialog(event),
                           ),
                         ),
@@ -269,7 +295,8 @@ class _EventsPageState extends State<EventsPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => FlyerPreviewPage(flyerUrl: event.flyerUrl!),
+                                  builder: (context) => FlyerPreviewPage(
+                                      flyerUrl: event.flyerUrl!),
                                 ),
                               );
                             } else {
@@ -286,27 +313,34 @@ class _EventsPageState extends State<EventsPage> {
                                     fit: BoxFit.cover,
                                   ),
                                 )
-                              : Icon(Icons.add_photo_alternate, color: isSelected ? Colors.white : Colors.green, size: 24),
+                              : Icon(Icons.add_photo_alternate,
+                                  color:
+                                      isSelected ? Colors.white : Colors.green,
+                                  size: 24),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Tooltip(
                         message: 'RSVP',
                         child: GestureDetector(
-                          onTap: () => _rsvpToEvent(event),
+                          onTap: () => _showRsvpDialog(event),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                event.rsvps.toString(),
+                                event.rsvpList.length.toString(),
                                 style: TextStyle(
-                                  color: isSelected ? Colors.white : Colors.black,
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(Icons.how_to_reg, color: isSelected ? Colors.white : Colors.green, size: 24),
+                              Icon(Icons.how_to_reg,
+                                  color:
+                                      isSelected ? Colors.white : Colors.green,
+                                  size: 24),
                             ],
                           ),
                         ),
@@ -369,7 +403,8 @@ class _EventsPageState extends State<EventsPage> {
                             setStateDialog(() => startTime = picked);
                           }
                         },
-                        child: Text(startTime.format(context), style: const TextStyle(color: Colors.green)),
+                        child: Text(startTime.format(context),
+                            style: const TextStyle(color: Colors.green)),
                       ),
                     ],
                   ),
@@ -386,7 +421,8 @@ class _EventsPageState extends State<EventsPage> {
                             setStateDialog(() => endTime = picked);
                           }
                         },
-                        child: Text(endTime.format(context), style: const TextStyle(color: Colors.green)),
+                        child: Text(endTime.format(context),
+                            style: const TextStyle(color: Colors.green)),
                       ),
                     ],
                   ),
@@ -395,7 +431,8 @@ class _EventsPageState extends State<EventsPage> {
             ),
             actions: [
               TextButton(
-                child: const Text('Cancel', style: TextStyle(color: Colors.green)),
+                child:
+                    const Text('Cancel', style: TextStyle(color: Colors.green)),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               TextButton(
@@ -406,7 +443,9 @@ class _EventsPageState extends State<EventsPage> {
                   final newEvent = Event(
                     title: titleController.text,
                     description: descriptionController.text,
-                    location: locationController.text,
+                    location: locationController.text.isEmpty
+                        ? null
+                        : locationController.text,
                     startTime: DateTime(
                       selectedDay.year,
                       selectedDay.month,
@@ -438,7 +477,8 @@ class _EventsPageState extends State<EventsPage> {
 
   void _showEditEventDialog(Event event) {
     final titleController = TextEditingController(text: event.title);
-    final descriptionController = TextEditingController(text: event.description);
+    final descriptionController =
+        TextEditingController(text: event.description);
     final locationController = TextEditingController(text: event.location);
     TimeOfDay startTime = TimeOfDay.fromDateTime(event.startTime);
     TimeOfDay endTime = TimeOfDay.fromDateTime(event.endTime);
@@ -482,7 +522,8 @@ class _EventsPageState extends State<EventsPage> {
                             setStateDialog(() => startTime = picked);
                           }
                         },
-                        child: Text(startTime.format(context), style: const TextStyle(color: Colors.green)),
+                        child: Text(startTime.format(context),
+                            style: const TextStyle(color: Colors.green)),
                       ),
                     ],
                   ),
@@ -499,7 +540,8 @@ class _EventsPageState extends State<EventsPage> {
                             setStateDialog(() => endTime = picked);
                           }
                         },
-                        child: Text(endTime.format(context), style: const TextStyle(color: Colors.green)),
+                        child: Text(endTime.format(context),
+                            style: const TextStyle(color: Colors.green)),
                       ),
                     ],
                   ),
@@ -507,20 +549,23 @@ class _EventsPageState extends State<EventsPage> {
               ),
             ),
             actions: [
-              IconButton(
+              TextButton.icon(
                 icon: const Icon(Icons.delete, color: Colors.red),
+                label:
+                    const Text('Delete', style: TextStyle(color: Colors.red)),
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the edit dialog
                   _showDeleteConfirmationDialog(event);
                 },
               ),
-              const Spacer(),
               TextButton(
-                child: const Text('Cancel', style: TextStyle(color: Colors.green)),
+                child:
+                    const Text('Cancel', style: TextStyle(color: Colors.green)),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               TextButton(
-                child: const Text('Update', style: TextStyle(color: Colors.green)),
+                child:
+                    const Text('Update', style: TextStyle(color: Colors.green)),
                 onPressed: () async {
                   if (titleController.text.isEmpty) return;
 
@@ -528,7 +573,9 @@ class _EventsPageState extends State<EventsPage> {
                     id: event.id,
                     title: titleController.text,
                     description: descriptionController.text,
-                    location: locationController.text,
+                    location: locationController.text.isEmpty
+                        ? null
+                        : locationController.text,
                     startTime: DateTime(
                       event.startTime.year,
                       event.startTime.month,
@@ -543,8 +590,8 @@ class _EventsPageState extends State<EventsPage> {
                       endTime.hour,
                       endTime.minute,
                     ),
-                    flyerUrl: event.flyerUrl, // Preserve existing flyer
-                    rsvps: event.rsvps,       // Preserve existing rsvps
+                    flyerUrl: event.flyerUrl,
+                    rsvpList: List<String>.from(event.rsvpList),
                   );
 
                   await _updateEvent(updatedEvent);
@@ -587,30 +634,38 @@ class _EventsPageState extends State<EventsPage> {
           .collection('events')
           .doc(event.id)
           .update(event.toFirestore());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Event updated successfully!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event updated successfully!')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating event: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating event: $e')),
+        );
+      }
     }
   }
 
   Future<void> _deleteEvent(Event event) async {
     try {
       await _firestore.collection('events').doc(event.id).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Event deleted successfully!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event deleted successfully!')),
+        );
+      }
       // Reset selection as the event is gone
       setState(() {
         _selectedEventIndex = -1;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting event: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting event: $e')),
+        );
+      }
     }
   }
 
@@ -622,33 +677,83 @@ class _EventsPageState extends State<EventsPage> {
     File file = File(pickedFile.path);
     try {
       String fileName =
-          'flyers/${event.id}_${DateTime.now().millisecondsSinceEpoch}.png';
+          'flyers/${event.id ?? 'new'}_${DateTime.now().millisecondsSinceEpoch}.png';
       TaskSnapshot snapshot =
           await FirebaseStorage.instance.ref(fileName).putFile(file);
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
-      await _firestore
-          .collection('events')
-          .doc(event.id)
-          .update({'flyerUrl': downloadUrl});
+      if (event.id != null) {
+        await _firestore
+            .collection('events')
+            .doc(event.id)
+            .update({'flyerUrl': downloadUrl});
+      }
     } catch (e) {
       debugPrint('Error uploading flyer: $e');
     }
   }
 
-  Future<void> _rsvpToEvent(Event event) async {
+  void _showRsvpDialog(Event event) {
+    final asuRiteIdController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('RSVP to Event'),
+          content: TextField(
+            controller: asuRiteIdController,
+            decoration: const InputDecoration(labelText: 'ASURITE ID'),
+          ),
+          actions: [
+            TextButton(
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.green)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('RSVP', style: TextStyle(color: Colors.green)),
+              onPressed: () {
+                final asuRiteId = asuRiteIdController.text.trim();
+                if (asuRiteId.isNotEmpty) {
+                  _rsvpToEvent(event, asuRiteId);
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _rsvpToEvent(Event event, String asuRiteId) async {
     try {
-      await _firestore
-          .collection('events')
-          .doc(event.id)
-          .update({'rsvps': FieldValue.increment(1)});
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('RSVP successful!')),
-      );
+      if (event.rsvpList.contains(asuRiteId)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('You have already RSVP\'d to this event.')),
+          );
+        }
+        return;
+      }
+      if (event.id != null) {
+        await _firestore.collection('events').doc(event.id).update({
+          'rsvpList': FieldValue.arrayUnion([asuRiteId])
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('RSVP successful!')),
+          );
+        }
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error RSVP: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error RSVP: $e')),
+        );
+      }
     }
   }
 }
@@ -661,7 +766,7 @@ class Event {
   final DateTime startTime;
   final DateTime endTime;
   final String? flyerUrl;
-  final int rsvps;
+  final List<String> rsvpList;
 
   Event({
     this.id,
@@ -671,20 +776,34 @@ class Event {
     required this.startTime,
     required this.endTime,
     this.flyerUrl,
-    this.rsvps = 0,
+    this.rsvpList = const [],
   });
 
   factory Event.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final raw = doc.data();
+    final data = (raw is Map<String, dynamic>) ? raw : <String, dynamic>{};
+
+    DateTime parseDateTime(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is Timestamp) return value.toDate();
+      if (value is DateTime) return value;
+      // if it's stored as ISO string
+      if (value is String) return DateTime.parse(value);
+      throw StateError('Unsupported timestamp type: ${value.runtimeType}');
+    }
+
+    final start = parseDateTime(data['startTime']);
+    final end = parseDateTime(data['endTime']);
+
     return Event(
       id: doc.id,
-      title: data['title'] ?? '',
-      description: data['description'] ?? '',
-      location: data['location'],
-      startTime: (data['startTime'] as Timestamp).toDate(),
-      endTime: (data['endTime'] as Timestamp).toDate(),
-      flyerUrl: data['flyerUrl'],
-      rsvps: data['rsvps'] ?? 0,
+      title: (data['title'] ?? '') as String,
+      description: (data['description'] ?? '') as String,
+      location: data['location'] as String?,
+      startTime: start,
+      endTime: end,
+      flyerUrl: data['flyerUrl'] as String?,
+      rsvpList: List<String>.from(data['rsvpList'] ?? []),
     );
   }
 
@@ -693,10 +812,10 @@ class Event {
       'title': title,
       'description': description,
       'location': location,
-      'startTime': startTime,
-      'endTime': endTime,
+      'startTime': Timestamp.fromDate(startTime),
+      'endTime': Timestamp.fromDate(endTime),
       'flyerUrl': flyerUrl,
-      'rsvps': rsvps,
+      'rsvpList': rsvpList,
     };
   }
 }
