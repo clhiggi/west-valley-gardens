@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class FlyerRsvpPage extends StatelessWidget {
+class FlyerRsvpPage extends StatefulWidget {
   final String flyerPath;
   final String eventId;
 
@@ -11,6 +11,13 @@ class FlyerRsvpPage extends StatelessWidget {
   });
 
   @override
+  State<FlyerRsvpPage> createState() => _FlyerRsvpPageState();
+}
+
+class _FlyerRsvpPageState extends State<FlyerRsvpPage> {
+  int _attendees = 123; // Dummy data for attendees
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Event Flyer')),
@@ -18,9 +25,9 @@ class FlyerRsvpPage extends StatelessWidget {
         children: [
           Expanded(
             child: Center(
-              child: flyerPath.isNotEmpty
+              child: widget.flyerPath.isNotEmpty
                   ? Image.network(
-                      flyerPath,
+                      widget.flyerPath,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => const Text(
                         'Unable to load flyer image.',
@@ -35,10 +42,8 @@ class FlyerRsvpPage extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.event_available),
-              label: const Text('RSVP'),
-              onPressed: () {
+            child: InkWell(
+              onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('RSVP successful!'),
@@ -46,8 +51,18 @@ class FlyerRsvpPage extends StatelessWidget {
                   ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.event_available, size: 48),
+                  const SizedBox(height: 8),
+                  const Text('RSVP'),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_attendees attendees',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
             ),
           ),
