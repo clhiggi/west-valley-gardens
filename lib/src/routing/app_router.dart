@@ -1,82 +1,111 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/screens/biodiversity_page.dart';
-import 'package:myapp/screens/events_page.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:myapp/screens/home_page.dart';
+import 'package:myapp/screens/events_page.dart';
+import 'package:myapp/screens/flyers_page.dart';
 import 'package:myapp/screens/meetings_page.dart';
 import 'package:myapp/screens/pause_page.dart';
+import 'package:myapp/screens/problems_page.dart';
+import 'package:myapp/widgets/scaffold_with_nav_bar.dart';
 
 class AppRouter {
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+  // Instances for dependency injection
+  static final _firestore = FirebaseFirestore.instance;
+  static final _imagePicker = ImagePicker();
+
   static final GoRouter router = GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/',
+    navigatorKey: _rootNavigatorKey,
     routes: [
       StatefulShellRoute.indexedStack(
-        pageBuilder: (context, state, navigationShell) {
-          return NoTransitionPage(
-            child: Scaffold(
-              body: navigationShell,
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: navigationShell.currentIndex,
-                onTap: (index) => navigationShell.goBranch(index),
-                items: const [
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.home), label: 'Home'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.event), label: 'Events'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.group), label: 'Meetings'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.pause), label: 'Pause'),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.bar_chart), label: 'Biodiversity'),
-                ],
-              ),
-            ),
-          );
+        builder: (context, state, navigationShell) {
+          return ScaffoldWithNavBar(navigationShell: navigationShell);
         },
         branches: [
+          // Branch for the Home page
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/home',
-                builder: (context, state) => const HomePage(),
+                path: '/',
+                builder: (BuildContext context, GoRouterState state) => const HomePage(),
               ),
             ],
           ),
+
+          // Branch for the Events page and its nested routes
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/events',
-                builder: (context, state) => const EventsPage(),
+                builder: (BuildContext context, GoRouterState state) {
+                  return EventsPage(
+                    firestore: _firestore,
+                    imagePicker: _imagePicker,
+                  );
+                },
+                routes: [
+                  GoRoute(
+                    path: 'flyers',
+                    builder: (BuildContext context, GoRouterState state) {
+                      final event = state.extra as Event?;
+                      if (event == null) {
+                        return Scaffold(
+                          appBar: AppBar(title: const Text('Error')),
+                          body: const Center(child: Text('No event details provided.')),
+                        );
+                      }
+                      return FlyersPage(
+                        event: event,
+                        firestore: _firestore,
+                        imagePicker: _imagePicker,
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
+
+          // Branch for the Meetings page
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/meetings',
-                builder: (context, state) => const MeetingsPage(),
+                builder: (BuildContext context, GoRouterState state) => const MeetingsPage(),
               ),
             ],
           ),
+
+          // Branch for the Pause page
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/pause',
-                builder: (context, state) => const PausePage(),
+                builder: (BuildContext context, GoRouterState state) => const PausePage(),
               ),
             ],
           ),
+
+          // Branch for the Problems page
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/biodiversity',
-                builder: (context, state) => const BiodiversityPage(),
+                path: '/problems',
+                builder: (BuildContext context, GoRouterState state) => const ProblemsPage(),
               ),
             ],
           ),
         ],
       ),
     ],
+    errorBuilder: (BuildContext context, GoRouterState state) => Scaffold(
+      body: Center(
+        child: Text('Page not found: ${state.error?.message ?? 'Unknown error'}'),
+      ),
+    ),
   );
 }

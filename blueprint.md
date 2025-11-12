@@ -2,42 +2,33 @@
 
 ## Overview
 
-This project is a web-based Flutter application. It has been migrated from a multi-platform (including Android) project to a web-only project. The goal is to create a modern, responsive, and visually appealing web application.
+This document outlines the blueprint of the West Valley Gardens Flutter application. The purpose of this application is to serve as a central hub for the West Valley Gardens community, providing information about events, meetings, and other relevant resources. The app aims to enhance community engagement and provide a seamless user experience for students, faculty, and community members.
 
-## Style, Design, and Features
+## Implemented Features & Design
 
-### Current State (as of migration to web-only)
+### Core Functionality
 
-*   **Platform:** Web-only.
-*   **Dependencies:**
-    *   `cloud_firestore`
-    *   `firebase_core`
-    *   `firebase_database`
-    *   `firebase_storage`
-    *   `fl_chart`
-    *   `go_router`
-    *   `google_fonts`
-    *   `image_picker`
-    *   `intl`
-    *   `provider`
-    *   `table_calendar`
-    *   `url_launcher`
-    *   `device_calendar`
-*   **Assets:**
-    *   `assets/flyers/`
+*   **Home Page:** Displays a welcome message and links to the official website and Instagram page.
+*   **Events Page:** A comprehensive event management system with a calendar view.
+    *   Users can view events by day, week, or month.
+    *   Add new events with details like title, description, location, and time.
+    *   RSVP to events using their ASUrite ID.
+    *   Upload and display event flyers.
+*   **Meetings Page:** Provides information about weekly student leadership meetings and monthly faculty/staff meetings, including Zoom links and access to previous meeting recordings.
+*   **Navigation:** A persistent bottom navigation bar for easy access to all main sections of the app.
 
-### Design Principles
+### Design & Theming
 
-*   **Modern Aesthetics:** The application will have a modern look and feel, incorporating Material Design 3 principles.
-*   **Responsive Layout:** The UI will be responsive and adapt to different screen sizes.
-*   **Intuitive Navigation:** `go_router` will be used for a declarative and intuitive navigation experience.
-*   **Rich Visuals:** `fl_chart` will be used for data visualization, and `google_fonts` for beautiful typography.
+*   **Color Scheme:** A green-themed color palette that aligns with the garden's branding.
+*   **Typography:** Clear and readable fonts for all text elements.
+*   **Layout:** Consistent and intuitive layouts across all pages.
 
-## Current Plan
+### New `Problem` Feature
 
-*   **Objective:** Refine the application for a web-only experience.
-*   **Steps:**
-    1.  Ensure the project is correctly configured for web-only development.
-    2.  Review and refactor the existing codebase to optimize for web performance and user experience.
-    3.  Implement any new features as requested by the user.
-    4.  Deploy the application to Firebase Hosting.
+*   **Report a Problem:** A new feature that allows users to report any issues or problems they encounter within the app or the garden.
+    *   A "Report a Problem" button is available on the app's main pages.
+    *   Clicking the button opens a dialog with a text field for describing the problem.
+    *   Upon submission, a "Thank you" confirmation is displayed.
+*   **Problems List Page:** A dedicated page to display a list of all reported problems.
+    *   The list is retrieved from the Firestore database.
+    *   Each problem in the list shows the description and the date it was reported.

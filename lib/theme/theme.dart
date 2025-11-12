@@ -45,10 +45,16 @@ class ViewDataPage extends StatelessWidget {
         child: Column(
           children: [
             _buildDataChart(
-                context, 'West Valley Gardens', westValleyGardensData),
+              context,
+              'West Valley Gardens',
+              westValleyGardensData,
+            ),
             const SizedBox(height: 40),
             _buildDataChart(
-                context, 'West Valley Campus', westValleyCampusData),
+              context,
+              'West Valley Campus',
+              westValleyCampusData,
+            ),
           ],
         ),
       ),
@@ -56,7 +62,10 @@ class ViewDataPage extends StatelessWidget {
   }
 
   Widget _buildDataChart(
-      BuildContext context, String title, Map<String, double> data) {
+    BuildContext context,
+    String title,
+    Map<String, double> data,
+  ) {
     if (data.isEmpty) {
       return Card(
         color: asuGold.withOpacity(0.1),

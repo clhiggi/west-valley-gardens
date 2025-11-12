@@ -13,9 +13,7 @@ class ImageViewerPage extends StatelessWidget {
     final firestore = FirebaseFirestore.instance;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flyer'),
-      ),
+      appBar: AppBar(title: const Text('Flyer')),
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         future: firestore.collection('flyers').doc(flyerId).get(),
         builder: (context, snapshot) {

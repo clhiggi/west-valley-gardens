@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 const Color primarySeedColor = Colors.green;
+const Color lightGreen = Color(0xFFC8E6C9); // Colors.green[100]
+const Color mediumGreen = Color(0xFF66BB6A); // Colors.green[400]
 const Color richBlack = Color(0xFF000000);
 const Color darkGreen = Color(0xFF006400); // Dark Green
 
@@ -19,15 +21,17 @@ final ThemeData lightTheme = ThemeData(
   ),
   textTheme: appTextTheme,
   appBarTheme: AppBarTheme(
-    backgroundColor: primarySeedColor,
+    backgroundColor: mediumGreen, // Updated header color
     foregroundColor: Colors.white,
-    titleTextStyle:
-        GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
+    titleTextStyle: GoogleFonts.oswald(
+      fontSize: 24,
+      fontWeight: FontWeight.bold,
+    ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      foregroundColor: Colors.white,
-      backgroundColor: primarySeedColor,
+      foregroundColor: Colors.black,
+      backgroundColor: lightGreen, // Keep light green for buttons
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
@@ -42,6 +46,7 @@ final ThemeData lightTheme = ThemeData(
     showUnselectedLabels: true,
     type: BottomNavigationBarType.fixed,
   ),
+  cardColor: lightGreen, // Set card color for consistency
 );
 
 final ThemeData darkTheme = ThemeData(
@@ -54,8 +59,10 @@ final ThemeData darkTheme = ThemeData(
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.grey[900],
     foregroundColor: Colors.white,
-    titleTextStyle:
-        GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
+    titleTextStyle: GoogleFonts.oswald(
+      fontSize: 24,
+      fontWeight: FontWeight.bold,
+    ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(

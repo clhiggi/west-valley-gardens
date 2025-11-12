@@ -6,8 +6,10 @@ class Event {
   final String description;
   final DateTime startTime;
   final DateTime endTime;
+  final String location;
   final String? flyerUrl;
-  final int rsvps;
+  final String? flyerPath;
+  final List<String> rsvpList;
 
   Event({
     this.id,
@@ -15,8 +17,10 @@ class Event {
     required this.description,
     required this.startTime,
     required this.endTime,
+    required this.location,
     this.flyerUrl,
-    this.rsvps = 0,
+    this.flyerPath,
+    this.rsvpList = const [],
   });
 
   factory Event.fromFirestore(DocumentSnapshot doc) {
@@ -27,8 +31,34 @@ class Event {
       description: data['description'] ?? '',
       startTime: (data['startTime'] as Timestamp).toDate(),
       endTime: (data['endTime'] as Timestamp).toDate(),
+      location: data['location'] ?? '',
       flyerUrl: data['flyerUrl'],
-      rsvps: data['rsvps'] ?? 0,
+      flyerPath: data['flyerPath'],
+      rsvpList: List<String>.from(data['rsvpList'] ?? []),
+    );
+  }
+
+  Event copyWith({
+    String? id,
+    String? title,
+    String? description,
+    DateTime? startTime,
+    DateTime? endTime,
+    String? location,
+    String? flyerUrl,
+    String? flyerPath,
+    List<String>? rsvpList,
+  }) {
+    return Event(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      location: location ?? this.location,
+      flyerUrl: flyerUrl ?? this.flyerUrl,
+      flyerPath: flyerPath ?? this.flyerPath,
+      rsvpList: rsvpList ?? this.rsvpList,
     );
   }
 
@@ -38,8 +68,10 @@ class Event {
       'description': description,
       'startTime': startTime,
       'endTime': endTime,
+      'location': location,
       'flyerUrl': flyerUrl,
-      'rsvps': rsvps,
+      'flyerPath': flyerPath,
+      'rsvpList': rsvpList,
     };
   }
 }

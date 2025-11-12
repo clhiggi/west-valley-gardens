@@ -7,10 +7,7 @@ class MeetingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meetings'),
-        backgroundColor: Colors.green,
-      ),
+      appBar: AppBar(title: const Text('Meetings')),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -53,32 +50,35 @@ class MeetingsPage extends StatelessWidget {
     required String zoomLink,
     required String previousMeetingsLink,
   }) {
+    const TextStyle bodyTextStyle = TextStyle(fontSize: 16.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         if (description != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
-            child: Text(description,
-                style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(description, style: bodyTextStyle),
           ),
         const SizedBox(height: 16),
         Row(
           children: [
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () => _launchURL(zoomLink),
-              icon: const Icon(Icons.mic),
-              label: const Text('Join Live Zoom Meeting'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[100],
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFFC8E6C9),
+              ),
+              child: const Text(
+                'Join Live Zoom Meeting',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
           ],
@@ -86,13 +86,17 @@ class MeetingsPage extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () => _launchURL(previousMeetingsLink),
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Watch Previous Meetings'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[100],
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFFC8E6C9),
+              ),
+              child: const Text(
+                'Watch Previous Meetings',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
           ],

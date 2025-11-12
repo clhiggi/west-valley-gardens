@@ -6,6 +6,7 @@
   # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.flutter
+    pkgs.dart
     pkgs.jdk21
     pkgs.unzip
     pkgs.google-chrome
@@ -23,6 +24,7 @@
       onCreate = { };
       # To run something each time the workspace is (re)started, use the `onStart` hook
       onStart = {
+        install-flutterfire = "dart pub global activate flutterfire_cli";
         web = "flutter run --machine -d web-server --web-hostname 0.0.0.0 --web-port $PORT";
       };
     };

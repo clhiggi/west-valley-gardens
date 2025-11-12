@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PausePage extends StatefulWidget {
   const PausePage({super.key});
@@ -19,7 +21,7 @@ class _PausePageState extends State<PausePage> {
     'Flies',
     'Honeybees',
     'Moths',
-    'Wasps'
+    'Wasps',
   ];
   final List<String> _locations = ['West Valley Gardens', 'West Valley Campus'];
 
@@ -44,6 +46,32 @@ class _PausePageState extends State<PausePage> {
     super.dispose();
   }
 
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  void _showImageDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Image.asset('assets/images/iNaturalistGuide.png'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _submitData() async {
     final batch = _firestore.batch();
     final timestamp = FieldValue.serverTimestamp();
@@ -56,8 +84,9 @@ class _PausePageState extends State<PausePage> {
           final count = int.tryParse(countText);
           if (count != null && count > 0) {
             submissions++;
-            final docRef =
-                _firestore.collection('pollinator_observations').doc();
+            final docRef = _firestore
+                .collection('pollinator_observations')
+                .doc();
             batch.set(docRef, {
               'pollinator': pollinator,
               'location': location,
@@ -74,13 +103,14 @@ class _PausePageState extends State<PausePage> {
         await batch.commit();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Thank you for submitting your observations!')),
+            content: Text('Thank you for submitting your observations!'),
+          ),
         );
         Navigator.of(context).pop();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error submitting data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error submitting data: $e')));
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,6 +121,8 @@ class _PausePageState extends State<PausePage> {
 
   @override
   Widget build(BuildContext context) {
+    const TextStyle bodyTextStyle = TextStyle(fontSize: 16.0);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("West Valley's Pause for Pollinators"),
@@ -105,21 +137,62 @@ class _PausePageState extends State<PausePage> {
               padding: EdgeInsets.only(bottom: 24.0),
               child: Text(
                 'West Valley Gardens is thrilled to launch the Pause for Pollinators initiative, a simple, fun way for students to step outside, take a mindful break, and reconnect with nature. In just 15 minutes, you can watch bees, butterflies, and other pollinators in action, record your observations, and contribute valuable data on the diversity of pollinators at West Valley.',
-                style: TextStyle(fontSize: 16),
+                style: bodyTextStyle,
                 textAlign: TextAlign.justify,
               ),
             ),
-            _buildInstructionStep('1',
-                'Pause your work and spend 15 mindful minutes outdoors to refresh your focus and lift your mood.'),
-            _buildInstructionStep('2',
-                'Download iNaturalist and join the WVG project to help ID organisms and photograph biodiversity.'),
-            _buildInstructionStep('3',
-                'Spend 10 minutes fully present with pollinators: observe, listen, and log your counts.'),
+            _buildInstructionStep(
+              '1',
+              'Pause your work and spend 15 mindful minutes outdoors to refresh your focus and lift your mood.',
+              bodyTextStyle,
+            ),
+            _buildInstructionStep(
+              '2',
+              Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: 'Download '),
+                    TextSpan(
+                      text: 'iNaturalist',
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = _showImageDialog,
+                    ),
+                    const TextSpan(text: ' and join the '),
+                    TextSpan(
+                      text: 'WVG project',
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => _launchURL(
+                          'https://www.inaturalist.org/projects/west-valley-gardens',
+                        ),
+                    ),
+                    const TextSpan(
+                      text:
+                          ' to help ID organisms and photograph biodiversity.',
+                    ),
+                  ],
+                ),
+              ),
+              bodyTextStyle,
+            ),
+            _buildInstructionStep(
+              '3',
+              'Spend 10 minutes fully present with pollinators: observe, listen, and log your counts.',
+              bodyTextStyle,
+            ),
             const SizedBox(height: 24),
             _buildHeaderRow(),
             const Divider(thickness: 2),
-            ..._pollinators
-                .map((pollinator) => _buildPollinatorRow(pollinator)),
+            ..._pollinators.map(
+              (pollinator) => _buildPollinatorRow(pollinator, bodyTextStyle),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _submitData,
@@ -127,8 +200,10 @@ class _PausePageState extends State<PausePage> {
                 backgroundColor: Colors.green[100],
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               child: const Text('Submit Observations'),
             ),
@@ -138,20 +213,29 @@ class _PausePageState extends State<PausePage> {
     );
   }
 
-  Widget _buildInstructionStep(String number, String text) {
+  Widget _buildInstructionStep(String number, dynamic text, TextStyle style) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-              radius: 12,
-              backgroundColor: Colors.green,
-              child: Text(number,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold))),
+            radius: 12,
+            backgroundColor: Colors.green,
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
+          Expanded(
+            child: text is String
+                ? Text(text, style: style)
+                : DefaultTextStyle.merge(style: style, child: text),
+          ),
         ],
       ),
     );
@@ -161,33 +245,38 @@ class _PausePageState extends State<PausePage> {
     return Row(
       children: [
         const Expanded(
-            flex: 2,
-            child: Text('Pollinator',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+          flex: 2,
+          child: Text(
+            'Pollinator',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ),
         Expanded(
-            flex: 3,
-            child: Text(_locations[0],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16))),
+          flex: 3,
+          child: Text(
+            _locations[0],
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ),
         Expanded(
-            flex: 3,
-            child: Text(_locations[1],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16))),
+          flex: 3,
+          child: Text(
+            _locations[1],
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildPollinatorRow(String pollinator) {
+  Widget _buildPollinatorRow(String pollinator, TextStyle style) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Expanded(
-              flex: 2,
-              child: Text(pollinator, style: const TextStyle(fontSize: 16))),
+          Expanded(flex: 2, child: Text(pollinator, style: style)),
           Expanded(flex: 3, child: _buildCountBox(pollinator, _locations[0])),
           Expanded(flex: 3, child: _buildCountBox(pollinator, _locations[1])),
         ],

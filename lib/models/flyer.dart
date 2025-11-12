@@ -6,14 +6,9 @@ class Flyer {
 
   // Convert a Flyer into a Map. The keys must correspond to the names of the
   // columns in the database.
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'path': path,
-      };
+  Map<String, dynamic> toJson() => {'name': name, 'path': path};
 
   // Implement a constructor that creates a Flyer from a map.
-  factory Flyer.fromJson(Map<String, dynamic> json) => Flyer(
-        name: json['name'],
-        path: json['path'],
-      );
+  factory Flyer.fromJson(Map<String, dynamic> json) =>
+      Flyer(name: json['name'], path: json['path']);
 }
